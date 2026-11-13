@@ -2,10 +2,12 @@
 
 Usage:
     python scripts/build.py --check     # validate term files only (used on every pull request)
-    python scripts/build.py             # validate, then write _site_src/ (for MkDocs) and itsdd.ttl
+    python scripts/build.py             # validate, then write _site_src/ (for MkDocs), itsdd.ttl
+                                        # and mkdocs.gen.yml (mkdocs.yml plus the generated navigation)
 
 Environment variables:
-    ITSDD_VERSION   release version written into the Turtle and the pages (default: "draft")
+    ITSDD_VERSION   release version written into the Turtle and the pages (default: "draft");
+                    "draft" also puts a draft banner on every page
     ITSDD_BASE      URI namespace (default: a provisional example.org namespace, see docs/workflow.md)
 
 Requires: PyYAML.
@@ -43,6 +45,14 @@ REGULATIONS = {
     "2026-253": ("TEL-TSI – Telematics applications for rail, Implementing Regulation (EU) 2026/253", None),
     "2015-962": ("RTTI (repealed) – DR (EU) 2015/962", "http://data.europa.eu/eli/reg_del/2015/962/oj"),
 }
+
+# folder -> short name used in navigation, tags and the all-terms table
+SHORT = {
+    "2024-490": "MMTIS (2024/490)", "2022-670": "RTTI (2022/670)", "886-2013": "SRTI (886/2013)",
+    "885-2013": "SSTP (885/2013)", "2023-1804": "AFIR (2023/1804)", "2026-253": "TEL-TSI (2026/253)",
+    "2015-962": "RTTI repealed (2015/962)",
+}
+ORDER = ["2024-490", "2022-670", "886-2013", "885-2013", "2023-1804", "2026-253", "2015-962"]
 
 FRONT = re.compile(r"\A---\s*\n(.*?)\n---\s*\n?(.*)\Z", re.S)
 
@@ -156,6 +166,23 @@ def normalize(body):
     return "\n".join(out)
 
 
+def tags(t):
+    """Tags for the MkDocs Material tags plugin: regulation, status, category, subcategory, modes."""
+    fm = t["fm"]
+    out = [SHORT[t["folder"]], f"status: {fm.get('status', '')}"]
+    for k in ("category", "subcategory", "modes"):
+        v = fm.get(k) or []
+        out += [str(x) for x in (v if isinstance(v, list) else [v]) if x]
+    return list(dict.fromkeys(out))
+
+
+def banner(version):
+    if version != "draft":
+        return ""
+    return ('!!! warning "Draft"\n    Work in progress, not a released version. '
+            'Terms may change before the next release.\n\n')
+
+
 def page(t, version):
     fm = t["fm"]
     rows = [("ID", f"`{fm['id']}`"), ("Short name", fm.get("short_name", "")),
@@ -167,8 +194,13 @@ def page(t, version):
     table = "| Field | Value |\n| --- | --- |\n" + "\n".join(f"| {k} | {v} |" for k, v in rows if v)
     definition = (f"!!! abstract \"Definition\"\n    {fm['definition']}\n\n"
                   if fm.get("definition") else "*No definition yet.*\n\n")
-    return (f"# {fm['label']}\n\n{definition}{table}\n\n{normalize(t['body'])}\n\n---\n"
+    meta = "---\n" + yaml.safe_dump({"tags": tags(t)}, allow_unicode=True, sort_keys=False) + "---\n\n"
+    return (f"{meta}# {fm['label']}\n\n{banner(version)}{definition}{table}\n\n{normalize(t['body'])}\n\n---\n"
             f"*NAPCORE ITS Data Dictionary {version}. Select any text on this page to comment on it.*\n")
+
+
+def cell(s):
+    return str(s or "").replace("|", "\\|").replace("\n", " ")
 
 
 def build(terms, version):
@@ -179,25 +211,66 @@ def build(terms, version):
         shutil.copytree(TERMS / "assets", OUT / "assets")
     if (ROOT / "docs-site").exists():  # site-wide files, e.g. js/comment.js
         shutil.copytree(ROOT / "docs-site", OUT, dirs_exist_ok=True)
-    by_folder = {}
+    by_folder = {f: [] for f in ORDER}
     for t in terms:
         by_folder.setdefault(t["folder"], []).append(t)
-    home = [f"# NAPCORE ITS Data Dictionary\n\nVersion **{version}**, built {date.today().isoformat()}.\n",
+    by_folder = {f: sorted(v, key=lambda x: x["fm"]["label"].lower()) for f, v in by_folder.items() if v}
+    built = date.today().isoformat()
+    nav = [{"Home": "index.md"}, {"All terms": "all-terms.md"}, {"Tags": "tags.md"}]
+
+    # home
+    if version == "draft":
+        head = (f"Draft, built {built}. This view shows the current state of the work, "
+                "including terms that are not yet approved.\n")
+    else:
+        head = f"Version **{version}**, built {built}. Work in progress is shown in the [draft](draft/).\n"
+    home = ["# NAPCORE ITS Data Dictionary\n", banner(version) + head,
             "Definitions of the data categories in the delegated regulations of the ITS Directive, "
             "AFIR and TEL-TSI. Select text on any page to comment on it.\n",
             "| Regulation | Terms |\n| --- | --- |"]
+
+    # one page per regulation, one per term
     for folder, items in by_folder.items():
         title = REGULATIONS[folder][0]
         home.append(f"| [{title}]({folder}/index.md) | {len(items)} |")
-        lst = [f"# {title}\n", "| Term | Status | Last revised |\n| --- | --- | --- |"]
-        for t in sorted(items, key=lambda x: x["fm"]["label"].lower()):
+        lst = [f"# {title}\n", banner(version) + "| Term | Status | Last revised |\n| --- | --- | --- |"]
+        (OUT / folder).mkdir(exist_ok=True)
+        for t in items:
             fm = t["fm"]
-            lst.append(f"| [{fm['label']}]({fm['id']}.md) | {fm.get('status', '')} | {fm.get('modified', '—')} |")
-            (OUT / folder).mkdir(exist_ok=True)
+            lst.append(f"| [{cell(fm['label'])}]({fm['id']}.md) | {fm.get('status', '')} | {fm.get('modified', '—')} |")
             (OUT / folder / f"{fm['id']}.md").write_text(page(t, version), encoding="utf-8")
         (OUT / folder / "index.md").write_text("\n".join(lst) + "\n", encoding="utf-8")
-    home.append("\nMachine-readable: [itsdd.ttl](itsdd.ttl)\n")
+        nav.append({SHORT[folder]: [f"{folder}/index.md"] + [f"{folder}/{t['fm']['id']}.md" for t in items]})
+    home.append("\nOverview of all terms and their status: [All terms](all-terms.md). "
+                "Machine-readable: [itsdd.ttl](itsdd.ttl)\n")
     (OUT / "index.md").write_text("\n".join(home), encoding="utf-8")
+
+    # all terms with status counts
+    counts = {}
+    for t in terms:
+        counts[t["fm"].get("status", "")] = counts.get(t["fm"].get("status", ""), 0) + 1
+    regs = list(by_folder)
+    allp = ["# All terms\n", banner(version) + f"{len(terms)} terms. Number of terms by status and regulation:\n",
+            "| Status | " + " | ".join(SHORT[f] for f in regs) + " | Total |",
+            "| --- | " + " | ".join("---:" for _ in regs) + " | ---: |"]
+    for st in [s for s in STATUSES if s in counts] + sorted(s for s in counts if s not in STATUSES):
+        row = [sum(1 for t in by_folder[f] if t["fm"].get("status", "") == st) for f in regs]
+        allp.append(f"| {st or '(none)'} | " + " | ".join(str(n or "") for n in row) + f" | {counts[st]} |")
+    allp += ["", "| Term | Regulation | Status | Last revised | Category |", "| --- | --- | --- | --- | --- |"]
+    for t in sorted(terms, key=lambda x: (x["fm"]["label"].lower(), ORDER.index(x["folder"]))):
+        fm = t["fm"]
+        allp.append(f"| [{cell(fm['label'])}]({t['folder']}/{fm['id']}.md) | {SHORT[t['folder']]} | "
+                    f"{fm.get('status', '')} | {fm.get('modified', '—')} | {cell(fm.get('category'))} |")
+    (OUT / "all-terms.md").write_text("\n".join(allp) + "\n", encoding="utf-8")
+
+    # tags index (filled in by the MkDocs Material tags plugin)
+    (OUT / "tags.md").write_text("# Tags\n\nTerms by regulation, status, category and mode.\n\n"
+                                 "<!-- material/tags -->\n", encoding="utf-8")
+
+    # MkDocs configuration = mkdocs.yml + generated navigation
+    gen = {"INHERIT": "mkdocs.yml", "nav": nav}
+    (ROOT / "mkdocs.gen.yml").write_text("# Generated by scripts/build.py, do not edit.\n" +
+                                         yaml.safe_dump(gen, allow_unicode=True, sort_keys=False), encoding="utf-8")
 
 
 def main():
@@ -218,7 +291,7 @@ def main():
     base = os.getenv("ITSDD_BASE", "https://example.org/provisional/itsdd/")
     build(terms, version)
     (OUT / "itsdd.ttl").write_text(turtle(terms, base, version), encoding="utf-8")
-    print(f"written {OUT.relative_to(ROOT)}/ and itsdd.ttl")
+    print(f"written {OUT.relative_to(ROOT)}/, itsdd.ttl and mkdocs.gen.yml")
 
 
 if __name__ == "__main__":

@@ -1,0 +1,60 @@
+name: Labels
+
+# Run once by hand (Actions > Labels > Run workflow) to create the labels.
+# Afterwards every comment from the website gets labels for its type and regulation.
+
+on:
+  workflow_dispatch:
+  issues:
+    types: [opened]
+
+permissions:
+  issues: write
+
+jobs:
+  labels:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.issue.labels.*.name, 'review')
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      ISSUE: ${{ github.event.issue.number }}
+      BODY: ${{ github.event.issue.body }}
+    steps:
+      - name: Create or update labels
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          L() { gh label create "$1" --color "$2" --description "$3" --force; }
+          L review        ededed "Comment from the website"
+          L editorial     c5def5 "Wording, typo, link; meaning unchanged (PATCH)"
+          L substantive   fbca04 "Meaning or scope should change (MINOR or MAJOR)"
+          L breaking      d93f0b "Changes the meaning of a published term (MAJOR)"
+          L question      d876e3 "Question, no change requested"
+          L MMTIS         0e8a16 "DR (EU) 2017/1926 as amended by 2024/490"
+          L RTTI          0e8a16 "DR (EU) 2022/670"
+          L "RTTI 2015"   bfdadc "DR (EU) 2015/962, repealed"
+          L SRTI          0e8a16 "DR (EU) 886/2013"
+          L SSTP          0e8a16 "DR (EU) 885/2013"
+          L AFIR          0e8a16 "Regulation (EU) 2023/1804"
+          L TEL-TSI       0e8a16 "Implementing Regulation (EU) 2026/253"
+      - name: Label the new comment
+        if: github.event_name == 'issues'
+        run: |
+          LABELS=$(python3 - <<'PY'
+          import os, re
+          body = os.environ.get("BODY", "")
+          out = []
+          m = re.search(r"### Type of comment\s+(\S+)", body)
+          if m:
+              out.append({"Editorial": "editorial", "Substantive": "substantive",
+                          "Question": "question"}.get(m.group(1), ""))
+          regs = {"2024-490": "MMTIS", "2022-670": "RTTI", "2015-962": "RTTI 2015", "886-2013": "SRTI",
+                  "885-2013": "SSTP", "2023-1804": "AFIR", "2026-253": "TEL-TSI"}
+          m = re.search(r"/(\d{3,4}-\d{3,4})/", body)
+          if m and m.group(1) in regs:
+              out.append(regs[m.group(1)])
+          print(",".join(x for x in out if x))
+          PY
+          )
+          echo "Labels: $LABELS"
+          [ -z "$LABELS" ] || gh issue edit "$ISSUE" --add-label "$LABELS"

@@ -3,3 +3,6 @@ _site_src/
 _import/
 __pycache__/
 .venv/
+mkdocs.gen.yml
+_out/
+_rel/

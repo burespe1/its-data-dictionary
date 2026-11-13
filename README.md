@@ -2,7 +2,7 @@
 
 Definitions of the data categories in the delegated regulations of the ITS Directive (MMTIS, RTTI, SRTI, SSTP), AFIR and TEL-TSI, maintained by NAPCORE Task 5.3.1.
 
-**Readers:** use the website (GitHub Pages of this repository). Select any text on a page to comment on it; this opens a short GitHub issue form.
+**Readers:** use the website (GitHub Pages of this repository): the latest release at the root, work in progress under `/draft/`, all terms with their status on the page *All terms*. Select any text on a page to comment on it; this opens a short GitHub issue form.
 
 **Machines:** the SKOS vocabulary is published with every release as `itsdd.ttl`. Its URIs are provisional until the namespace is decided.
 
@@ -31,7 +31,7 @@ Regulation folders: `2024-490` MMTIS, `2022-670` RTTI, `886-2013` SRTI, `885-201
 pip install -r scripts/requirements.txt
 python scripts/word2md.py CONSOLIDATION.docx --out _import   # convert and compare, writes _import/REPORT.md
 python scripts/build.py --check                              # validate term files
-python scripts/build.py && mkdocs serve                      # preview the website locally
+python scripts/build.py && mkdocs serve -f mkdocs.gen.yml   # preview the website locally
 ```
 
 See [docs/workflow.md](docs/workflow.md) for the release steps and [docs/term-files.md](docs/term-files.md) for the fields of a term file.

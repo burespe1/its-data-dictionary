@@ -12,5 +12,8 @@ markdown_extensions:
   - tables
   - toc:
       permalink: true
+plugins:
+  - search
+  - tags
 extra_javascript:
   - js/comment.js

@@ -1,0 +1,44 @@
+name: Release
+
+# Push a tag itsdd-vX.Y.Z (e.g. itsdd-v1.1.0) to publish a release:
+#   - a GitHub Release with the Turtle file and a ZIP of the website,
+#     release notes taken from the section "## X.Y.Z" of CHANGELOG.md;
+#   - then the Build workflow runs again, so the site root shows this release.
+
+on:
+  push:
+    tags: ["itsdd-v*"]
+
+permissions:
+  contents: write     # create the GitHub Release
+  actions: write      # start the Build workflow
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r scripts/requirements.txt
+      - name: Build release files
+        run: |
+          VERSION="${GITHUB_REF_NAME#itsdd-v}"
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          ITSDD_VERSION="$VERSION" python scripts/build.py
+          mkdocs build --strict -f mkdocs.gen.yml -d _site
+          mkdir -p dist
+          cp _site_src/itsdd.ttl "dist/itsdd-$VERSION.ttl"
+          (cd _site && zip -qr "../dist/itsdd-$VERSION-site.zip" .)
+          awk -v v="## $VERSION" '$0==v{f=1;next} /^## /{f=0} f' CHANGELOG.md > notes.md
+          [ -s notes.md ] || echo "No section '## $VERSION' in CHANGELOG.md." > notes.md
+      - name: Create GitHub Release
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --title "ITS Data Dictionary $VERSION" --notes-file notes.md --verify-tag
+      - name: Update the website
+        run: gh workflow run build.yml --ref main

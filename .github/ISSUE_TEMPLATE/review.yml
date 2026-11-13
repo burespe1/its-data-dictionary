@@ -1,0 +1,36 @@
+name: Comment on a term
+description: Comment on a definition or other text of the ITS Data Dictionary
+title: "[Review] "
+labels: ["review"]
+body:
+  - type: input
+    id: term
+    attributes:
+      label: Term
+    validations:
+      required: true
+  - type: input
+    id: page
+    attributes:
+      label: Page (link)
+  - type: textarea
+    id: quote
+    attributes:
+      label: Quoted text
+      render: text
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type of comment
+      options:
+        - Editorial (wording, typo, link; meaning unchanged)
+        - Substantive (meaning or scope should change)
+        - Question
+    validations:
+      required: true
+  - type: textarea
+    id: comment
+    attributes:
+      label: Comment and proposed text
+    validations:
+      required: true

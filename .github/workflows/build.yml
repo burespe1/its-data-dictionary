@@ -1,0 +1,44 @@
+name: Build
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ["itsdd-v*"]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r scripts/requirements.txt
+      - name: Check term files
+        run: python scripts/build.py --check
+      - name: Build site and Turtle
+        run: |
+          VERSION="${GITHUB_REF_NAME#itsdd-}"
+          [ "${GITHUB_REF_TYPE}" = "tag" ] || VERSION="draft"
+          ITSDD_VERSION="$VERSION" python scripts/build.py
+          mkdocs build --strict
+      - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request'
+        with:
+          path: _site
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+    steps:
+      - uses: actions/deploy-pages@v4

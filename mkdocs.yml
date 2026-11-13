@@ -1,0 +1,16 @@
+site_name: NAPCORE ITS Data Dictionary
+repo_url: https://github.com/NAPCORE/its-data-dictionary
+docs_dir: _site_src
+site_dir: _site
+theme:
+  name: material
+  features:
+    - navigation.indexes
+    - search.highlight
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+extra_javascript:
+  - js/comment.js

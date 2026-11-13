@@ -127,6 +127,34 @@ def turtle(terms, base, version):
         lines.append(f"<{uri}> a skos:Concept ;\n    " + " ;\n    ".join(props) + " .\n")
     return "\n".join(l for l in lines if l is not None)
 
+URL = re.compile(r'(?<![(<"\]=])(https?://[^\s<>|)\]]+[^\s<>|)\].,;:])')
+
+
+def normalize(body):
+    """Make GitHub-flavoured term text render the same in MkDocs (Python-Markdown).
+
+    - a table needs an empty line before it, also inside a > quote;
+    - a backslash at the end of a line (hard line break) becomes two spaces;
+    - bare URLs become links.
+    """
+    out, fence = [], False
+    for line in body.splitlines():
+        if line.lstrip("> ").startswith("```"):
+            fence = not fence
+        if not fence:
+            m = re.match(r"^(>\s?)?", line)
+            q, text = m.group(0), line[m.end():]
+            prev = out[-1] if out else ""
+            ptext = re.sub(r"^>\s?", "", prev)
+            if text.lstrip().startswith("|") and ptext.strip() and not ptext.lstrip().startswith("|"):
+                out.append(q.rstrip())
+            if text.rstrip().endswith("\\") and not text.rstrip().endswith("\\\\"):
+                line = line.rstrip()[:-1] + "  "
+            if "`" not in line:
+                line = URL.sub(r"<\1>", line)
+        out.append(line)
+    return "\n".join(out)
+
 
 def page(t, version):
     fm = t["fm"]
@@ -139,7 +167,7 @@ def page(t, version):
     table = "| Field | Value |\n| --- | --- |\n" + "\n".join(f"| {k} | {v} |" for k, v in rows if v)
     definition = (f"!!! abstract \"Definition\"\n    {fm['definition']}\n\n"
                   if fm.get("definition") else "*No definition yet.*\n\n")
-    return (f"# {fm['label']}\n\n{definition}{table}\n\n{t['body']}\n\n---\n"
+    return (f"# {fm['label']}\n\n{definition}{table}\n\n{normalize(t['body'])}\n\n---\n"
             f"*NAPCORE ITS Data Dictionary {version}. Select any text on this page to comment on it.*\n")
 
 

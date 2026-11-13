@@ -45,7 +45,8 @@ jobs:
             git worktree add -q _rel "$TAG"
             cd _rel
             ITSDD_VERSION="${TAG#itsdd-v}" python scripts/build.py
-            mkdocs build --strict -f mkdocs.gen.yml -d ../_out
+            zensical build --strict -f mkdocs.gen.yml
+            cp -r _site/. ../_out/
           else
             echo "No release yet, the site root points to the draft."
             printf '%s\n' '<!doctype html><meta charset="utf-8">' \
@@ -57,7 +58,8 @@ jobs:
       - name: Draft (current main)
         run: |
           ITSDD_VERSION=draft python scripts/build.py
-          mkdocs build --strict -f mkdocs.gen.yml -d _out/draft
+          zensical build --strict -f mkdocs.gen.yml
+          mkdir -p _out && rm -rf _out/draft && mv _site _out/draft
 
       - uses: actions/upload-pages-artifact@v3
         if: github.event_name != 'pull_request'

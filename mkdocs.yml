@@ -1,19 +1,37 @@
+# Site configuration, read by Zensical (https://zensical.org).
+# scripts/build.py writes mkdocs.gen.yml = this file + the generated navigation;
+# build with: zensical build -f mkdocs.gen.yml
 site_name: NAPCORE ITS Data Dictionary
+site_description: Definitions of the data categories in the delegated regulations of the ITS Directive, AFIR and TEL-TSI
 repo_url: https://github.com/NAPCORE/its-data-dictionary
+repo_name: NAPCORE/its-data-dictionary
 docs_dir: _site_src
 site_dir: _site
 theme:
-  name: material
+  language: en
+  font:
+    text: Titillium Web
+    code: JetBrains Mono
+  icon:
+    logo: lucide/book-open
+  palette:
+    - scheme: default
+      primary: custom
+      accent: custom
   features:
     - navigation.indexes
+    - navigation.top
+    - navigation.footer
     - search.highlight
+plugins:
+  - search
+  - tags
 markdown_extensions:
   - admonition
   - tables
   - toc:
       permalink: true
-plugins:
-  - search
-  - tags
+extra_css:
+  - css/napcore.css
 extra_javascript:
   - js/comment.js

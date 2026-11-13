@@ -30,7 +30,7 @@ jobs:
           VERSION="${GITHUB_REF_NAME#itsdd-v}"
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
           ITSDD_VERSION="$VERSION" python scripts/build.py
-          mkdocs build --strict -f mkdocs.gen.yml -d _site
+          zensical build --strict -f mkdocs.gen.yml
           mkdir -p dist
           cp _site_src/itsdd.ttl "dist/itsdd-$VERSION.ttl"
           (cd _site && zip -qr "../dist/itsdd-$VERSION-site.zip" .)

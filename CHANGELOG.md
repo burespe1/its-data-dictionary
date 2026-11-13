@@ -10,6 +10,7 @@ One section per release, newest first. Tags: `itsdd-vX.Y.Z`.
 - File `detailed-common--fare-query_common fare products.md` renamed to match its `id`.
 
 ### Added
+- Website built with Zensical instead of MkDocs Material, in NAPCORE colours (`docs-site/css/napcore.css`).
 - `scripts/word2md.py`: converts the Word consolidation document into term files and reports gaps.
 - `scripts/build.py`: validates term files, builds the website sources and `itsdd.ttl`.
 - Comment button on every web page and the issue form `review.yml`.

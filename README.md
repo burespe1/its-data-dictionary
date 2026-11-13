@@ -40,7 +40,7 @@ Regulation folders: `2024-490` MMTIS, `2022-670` RTTI, `886-2013` SRTI, `885-201
 pip install -r scripts/requirements.txt
 python scripts/word2md.py CONSOLIDATION.docx --out _import   # convert and compare, writes _import/REPORT.md
 python scripts/build.py --check                              # validate term files
-python scripts/build.py && mkdocs serve -f mkdocs.gen.yml   # preview the website locally
+python scripts/build.py && zensical serve -f mkdocs.gen.yml # preview the website locally
 ```
 
 See [docs/workflow.md](docs/workflow.md) for the release steps and [docs/term-files.md](docs/term-files.md) for the fields of a term file.

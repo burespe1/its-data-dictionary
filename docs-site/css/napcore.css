@@ -1,94 +1,85 @@
-/* NAPCORE colours (napcore.eu): blue #0e3e9f, navy #001b57, yellow #ffcb01, link #008cff */
+/* NAPCORE colours (napcore.eu), used sparingly:
+   blue #0e3e9f, navy #001b57, yellow #ffcb01 as accent lines only. */
 :root,
 [data-md-color-scheme="default"] {
   --napcore-blue: #0e3e9f;
   --napcore-navy: #001b57;
   --napcore-yellow: #ffcb01;
-  --napcore-link: #008cff;
+  --napcore-blue-tint: #f3f5fa;   /* table headers, definition box */
+  --napcore-yellow-tint: #fff8dc; /* draft banner, tags */
 
   --md-primary-fg-color: var(--napcore-blue);
-  --md-primary-fg-color--light: #3c64b5;
+  --md-primary-fg-color--light: #4a6aae;
   --md-primary-fg-color--dark: var(--napcore-navy);
   --md-primary-bg-color: #ffffff;
-  --md-primary-bg-color--light: #ffffffb3;
-  --md-accent-fg-color: var(--napcore-link);
-  --md-accent-fg-color--transparent: #008cff1a;
-  --md-accent-bg-color: #ffffff;
-  --md-typeset-a-color: var(--napcore-link);
+  --md-accent-fg-color: #2f5bb7;
+  --md-accent-fg-color--transparent: #0e3e9f12;
+  --md-typeset-a-color: #24508f;
   --md-footer-bg-color: var(--napcore-navy);
   --md-footer-bg-color--dark: #00123b;
-  --md-default-fg-color: #1e1e1e;
+  --md-default-fg-color: #222222;
 }
 
-/* Header: yellow bar with blue text, as on napcore.eu */
+/* Header: white, NAPCORE yellow line underneath */
 .md-header {
-  background-color: var(--napcore-yellow);
-  color: var(--napcore-blue);
-  box-shadow: 0 2px 0 var(--napcore-blue);
+  background-color: #ffffff;
+  color: var(--napcore-navy);
+  box-shadow: none;
+  border-bottom: 3px solid var(--napcore-yellow);
 }
 .md-header__button,
 .md-header__topic,
 .md-header__title,
-.md-source { color: var(--napcore-blue); }
-.md-header__topic:first-child { font-weight: 700; }
-.md-search__form { background-color: #ffffffcc; }
-.md-search__input { color: var(--napcore-navy); }
-.md-search__input::placeholder,
-.md-search__icon { color: var(--napcore-blue); }
+.md-source { color: var(--napcore-navy); }
+.md-header__topic:first-child { font-weight: 600; }
 
-/* Headings and body text */
-.md-typeset { font-size: .78rem; }
-.md-typeset h1 { color: var(--napcore-blue); font-weight: 700; }
+/* Headings */
+.md-typeset h1 { color: var(--napcore-navy); font-weight: 600; }
 .md-typeset h2,
-.md-typeset h3 { color: var(--napcore-navy); font-weight: 700; }
-.md-typeset a { font-weight: 600; }
-.md-typeset a:hover { color: var(--napcore-blue); }
+.md-typeset h3 { color: var(--napcore-navy); font-weight: 600; }
+
+/* Links: calm, underlined only on hover */
+.md-typeset a { font-weight: inherit; text-decoration: none; }
+.md-typeset a:hover { color: var(--napcore-blue); text-decoration: underline; }
 
 /* Navigation */
-.md-nav__item .md-nav__link--active,
-.md-nav__item .md-nav__link--active code { color: var(--napcore-blue); font-weight: 700; }
-.md-nav__link:hover { color: var(--napcore-link); }
+.md-nav__item .md-nav__link--active { color: var(--napcore-blue); font-weight: 600; }
 
-/* Tables: blue header, yellow row hover, as the tables on napcore.eu */
-.md-typeset table:not([class]) { border: 1px solid #d9dfeb; font-size: .74rem; }
+/* Tables: light header with a thin blue line */
+.md-typeset table:not([class]) { border: 1px solid #e3e6ee; font-size: .74rem; }
 .md-typeset table:not([class]) th {
-  background-color: var(--napcore-blue);
-  color: #ffffff;
+  background-color: var(--napcore-blue-tint);
+  color: var(--napcore-navy);
   font-weight: 600;
+  border-bottom: 2px solid var(--napcore-blue);
 }
-.md-typeset table:not([class]) tbody tr:hover {
-  background-color: #ffcb0133;
-  box-shadow: none;
-}
+.md-typeset table:not([class]) tbody tr:hover { background-color: #fafbfd; box-shadow: none; }
 
-/* Definition box (admonition "abstract") and draft banner (admonition "warning") */
-.md-typeset .admonition.abstract,
-.md-typeset details.abstract { border-color: var(--napcore-blue); background-color: #0e3e9f0d; }
-.md-typeset .abstract > .admonition-title,
-.md-typeset .abstract > summary { background-color: #0e3e9f1a; }
-.md-typeset .abstract > .admonition-title::before,
-.md-typeset .abstract > summary::before { background-color: var(--napcore-blue); }
-.md-typeset .admonition.warning { border-color: var(--napcore-yellow); background-color: #ffcb011f; }
-.md-typeset .warning > .admonition-title { background-color: #ffcb0140; }
-.md-typeset .warning > .admonition-title::before { background-color: var(--napcore-navy); }
+/* Definition box and draft banner */
+.md-typeset .admonition.abstract { border-color: #c9d2e6; background-color: var(--napcore-blue-tint); }
+.md-typeset .abstract > .admonition-title { background-color: transparent; color: var(--napcore-navy); }
+.md-typeset .abstract > .admonition-title::before { background-color: var(--napcore-blue); }
+.md-typeset .admonition.warning { border-color: #f0dc8c; background-color: var(--napcore-yellow-tint); }
+.md-typeset .warning > .admonition-title { background-color: transparent; }
+.md-typeset .warning > .admonition-title::before { background-color: #8a6d00; }
 
-/* Tags: yellow chips with blue text */
+/* Tags */
 .md-typeset .md-tag {
-  background-color: var(--napcore-yellow);
-  color: var(--napcore-blue);
-  font-weight: 600;
+  background-color: var(--napcore-yellow-tint);
+  color: var(--napcore-navy);
+  font-weight: 500;
+  text-decoration: none;
 }
-.md-typeset .md-tag:hover,
-.md-typeset .md-tag[href]:hover { background-color: var(--napcore-blue); color: #ffffff; }
+.md-typeset .md-tag[href]:hover { background-color: #ffeeb0; color: var(--napcore-navy); }
 
 /* Quoted term text (phase-1 term files use > quotes) */
 .md-typeset blockquote {
-  border-inline-start-color: var(--napcore-yellow) !important;
+  border-inline-start-color: #e8d48a !important;
   color: var(--md-default-fg-color);
 }
 
-/* Footer: navy with yellow line */
-.md-footer { border-top: 4px solid var(--napcore-yellow); }
-.md-footer-meta { background-color: var(--napcore-navy) !important; color: #ffffffcc; }
-.md-footer-meta, .md-footer-meta * { color: #ffffffcc !important; }
-.md-footer-meta a:hover { color: var(--napcore-yellow) !important; }
+/* Footer */
+.md-footer { border-top: 3px solid var(--napcore-yellow); }
+.md-footer-meta { background-color: var(--napcore-navy) !important; }
+.md-footer-meta, .md-footer-meta * { color: #ffffffb3 !important; }
+.md-footer-meta a:hover { color: #ffffff !important; }

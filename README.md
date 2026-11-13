@@ -1,66 +1,41 @@
-# NAPCORE ITS Data Dictionary 📚
+# NAPCORE ITS Data Dictionary
 
-![Version](https://img.shields.io/github/v/tag/NAPCORE/its-data-dictionary?label=version&style=flat-square)
-![License](https://img.shields.io/github/license/NAPCORE/its-data-dictionary?style=flat-square)
-![Last Commit](https://img.shields.io/github/last-commit/NAPCORE/its-data-dictionary?style=flat-square)
-![Open Issues](https://img.shields.io/github/issues/NAPCORE/its-data-dictionary?style=flat-square)
-![Closed Issues](https://img.shields.io/github/issues-closed/NAPCORE/its-data-dictionary?style=flat-square)
+Definitions of the data categories in the delegated regulations of the ITS Directive (MMTIS, RTTI, SRTI, SSTP), AFIR and TEL-TSI, maintained by NAPCORE Task 5.3.1.
 
+**Readers:** use the website (GitHub Pages of this repository). Select any text on a page to comment on it; this opens a short GitHub issue form.
 
-A structured dictionary of **transport-related concepts** defined in delegated regulations of the [ITS Directive](https://eur-lex.europa.eu/eli/dir/2010/40/oj/eng), managed in Markdown. Includes human-readable previews, releases and machine-readable RDF.
-This repository serves for development and publishing of the data dictionary. 
+**Machines:** the SKOS vocabulary is published with every release as `itsdd.ttl`. Its URIs are provisional until the namespace is decided.
 
-## 🧭 Data Dictionary Release files
+## How the content gets here
 
-Data Dictionary items are grouped by delegated regulation they appear in to the separate file. Available as stable **release version [here](./release/README.md)** or **draft development version [here](./drafts/preview/README.md)**
+The definitions are drafted and agreed in the Word working document of Task 5.3.1. After a release is approved, the repository maintainer converts the Word document into the term files of this repository with `scripts/word2md.py`. Nothing in this repository is edited by experts directly, and nothing generated is committed.
 
-| Abbreviation | Full Title & Regulation No.                          | 📂 Link to release version    |
-|--------------|------------------------------------------------------|-----------------------------|
-| 🛑 **SRTI**  | Safety-Related Traffic Information *(DR 886/2013)*   | [View Vocabulary →](./release/DR_EU_886-2013.md) |
-| 🧭 **MMTIS** | Multimodal Travel Information Services *(DR 2024/490)* | [View Vocabulary →](./release/DR_EU_2024-490.md) |
-| 🚙 **RTTI**  | Real-Time Traffic Information *(DR 2015/962)*        | [View Vocabulary →](./release/DR_EU_2015-962.md) |
-| 🚙 **RTTI**  | Real-Time Traffic Information *(DR 2022/670)*        | [View Vocabulary →](./release/DR_EU_2022-670.md) |
-| 🏁 **SSTP**  | Safe and Secure Truck Parking *(DR 885/2013)*       | [View Vocabulary →](./release/DR_EU_885-2013.md) |
+Detailed SKOS concept models (for example NAPCORE Core Concepts) are published separately in [its-data-dictionary-skos-models](https://github.com/NAPCORE/its-data-dictionary-skos-models).
 
-NOTE: release could be also accessed as a downloadable artefact in [releases](https://github.com/NAPCORE/its-data-dictionary/releases) GitHub functionality.
+## Repository layout
 
-## 🛠 Content Creation
-
-The work on **transport-related concepts** aka **data types** is done in the `drafts/` folder in the subfolder per delegated regulation. Each data type is a separate markdown document (fragment), with predefined attributes and "free" content. 
-
-- [`drafts/README.md`](drafts/README.md) for the detailed instructions on drafting and content of data dictionary definitions. 
-- [`drafts/INDEX.md`](drafts/INDEX.md) to view the statuses of all data dictionary items.
-- [`drafts/WORKFLOW.md`](drafts/WORKFLOW.md) to view the process of updating the terms.
-- [`drafts/preview/README.md`](drafts/preview/README.md) – review file of data types definitions, one per delegated regulation
-
-## 🌍 Published Outputs
-
-- 📦 Release Dictionaries:  [`release/README.md`](./release/README.md)
-
-## 📁 Repository Structure
-
-- `./drafts/`: Individual Markdown entries grouped by delegated regulation including Auto-generated index file and browsable pre-view files (one per DR)
-- `./release/`: Final published dictionary for each tagged version
-- `assets/`: Python scripts, original dictionary release 
-- `./(drafts|release)/assets/(img|code)/`: Optional media and supporting examples
-
-## 🚀 Workflow Automation 
-
-To create an updated index file [`drafts/INDEX.md`](drafts/INDEX.md) and preview files of data types definitions, one per delegated regulation `drafts/preview/DR_*.md` run:
-
-```bash
-uv run assets\scripts\generate_preview.py
+```text
+terms/<regulation>/<id>.md   one file per term: YAML front matter + Markdown body
+terms/assets/                figures and code examples used by term files
+scripts/word2md.py           Word consolidation document -> term files
+scripts/build.py             term files -> website sources and itsdd.ttl
+docs/                        how term files are written and how releases work
+archive/phase1-source/       the NAPCORE Phase 1 dictionary as published in 2024
 ```
 
-To create new versioned release file of data types definitions, one per delegated regulation `release/DR_*.md` and SKOS-formatted RDF files from data types strict-definitions `vocab/<DR>/<item>.ttl` run:
+Regulation folders: `2024-490` MMTIS, `2022-670` RTTI, `886-2013` SRTI, `885-2013` SSTP, `2023-1804` AFIR, `2026-253` TEL-TSI, `2015-962` RTTI (repealed, archived terms).
+
+## For the maintainer
 
 ```bash
-git tag v1.0.0
-git push origin v1.0.0
-
-uv run assets\scripts\generate_release.py
+pip install -r scripts/requirements.txt
+python scripts/word2md.py CONSOLIDATION.docx --out _import   # convert and compare, writes _import/REPORT.md
+python scripts/build.py --check                              # validate term files
+python scripts/build.py && mkdocs serve                      # preview the website locally
 ```
 
-## 💬 License & Contributions
+See [docs/workflow.md](docs/workflow.md) for the release steps and [docs/term-files.md](docs/term-files.md) for the fields of a term file.
 
-Open-source under the MIT License. Contributions are welcome—just submit a PR or open an issue.
+## License
+
+See [LICENSE](LICENSE).

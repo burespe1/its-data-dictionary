@@ -1,78 +1,37 @@
-# 🛠️ Definition Processing Workflow
+# Workflow
 
-A structured workflow for capturing, enriching, reviewing, validating, and publishing ITS data definitions.
+## Where the work happens
 
----
+| Step | Where | Who |
+| --- | --- | --- |
+| Draft and discuss definitions | Word working document (SharePoint) | Editors and experts of Task 5.3.1 |
+| Approve a release package | Task 5.3.1, then the NAPCORE Steering Committee | Editors, SCOM |
+| Transfer the approved text | this repository, `scripts/word2md.py` | Repository maintainer |
+| Publish the website and Turtle | GitHub Actions (`.github/workflows/build.yml`) | automatic |
+| Comment on published text | button on every web page → GitHub issue | anyone with a GitHub account |
 
-## 🔁 Status Labels & Transition Logic
+## Release steps (repository maintainer)
 
-| Status         | Description                                  | 
-|----------------|----------------------------------------------|
-| ![proposed](https://img.shields.io/badge/proposed-ffc107)     | Initial definition captured for enrichment, initial development is here   |
-| ![ready for review](https://img.shields.io/badge/ready_for_review-673ab7) | staging status, after initial enrichment of the draft definition         |
-| ![under review](https://img.shields.io/badge/under_review-2196f3) | Being peer-reviewed or expert-evaluated      |
-| ![approved](https://img.shields.io/badge/approved-4caf50)     | Finalised concept definition 				|
-| ![for thorough review](https://img.shields.io/badge/for_thorough_review-ff9800)    | No consensus reached, needs further developments               | 
-| ![archived](https://img.shields.io/badge/archived-bdbdbd)     | Deprecated or replaced concept               | 
+1. Run `python scripts/word2md.py CONSOLIDATION.docx --out _import` and read `_import/REPORT.md`: entries per regulation, empty template fields, entries without a definition.
+2. Copy the converted files from `_import/` into `terms/` in a branch. Keep existing `id`s; write new IDs back into the ID field of the Word template.
+3. Set `status: approved` and `modified: <date>` on the terms that the release package approved, and `status: archived` with a `note` on terms that were withdrawn.
+4. Run `python scripts/build.py --check`, open a pull request, let a second editor check the diff, merge.
+5. Add a section to `CHANGELOG.md` and tag the merge commit `itsdd-vX.Y.Z`. The workflow builds and publishes the site and `itsdd.ttl`.
 
+## Version numbers
 
-## Drafting the definition
+Semantic Versioning for the dictionary as a whole:
 
-### 📥 1. Initial Capture
+- **MAJOR** – the meaning of an approved term changes, or an identifier changes.
+- **MINOR** – terms are added, enriched without changing their meaning, or archived (they stay published as deprecated).
+- **PATCH** – editorial corrections only.
 
-- Source definitions from trusted materials.
-- Assign status → ![proposed](https://img.shields.io/badge/proposed-ffc107).
-- Create metadata fields:  
-  `source`, `category`, `subcategory`, `id`, `definition`, `status`.
+Terms carry no version of their own, only the date of their last approved revision (`modified`). Terms are never deleted; an archived term keeps its file and its URI.
 
-### 🔍 2. Refinement Tasks
+## Comments
 
-- Reword for precision and clarity.
-- Normalize terminology to domain standards.
+The comment button on the website opens the issue form `.github/ISSUE_TEMPLATE/review.yml`, pre-filled with the term, the page and the selected text. The form asks whether a comment is editorial or substantive, which is also what decides the version number. During drafting, comments go into the Word working document as before.
 
-### 📝 3. Explanatory Additions
+## URIs
 
-- Provide background context.
-- Include example usage and edge cases.
-- Clarify assumptions or constraints.
-- Add visual aids or code samples when helpful.
-
-- Change status to → ![ready for review](https://img.shields.io/badge/ready_for_review-673ab7).
-
-## 👥 3. Peer Review Workflow
-
-- Change status to → ![under review](https://img.shields.io/badge/under_review-2196f3).
-- Reviewers may suggest edits or approve.
-- Resulting status becomes:
-  - ![approved](https://img.shields.io/badge/approved-4caf50) if approved after all proposed changes
-  - ![for thorough review](https://img.shields.io/badge/for_thorough_review-ff9800) if no consensus was reached in the review process and dictionary item needs further elaboration
-  - ![archived](https://img.shields.io/badge/archived-bdbdbd) if the item is deprecated, by e.g. new definitions in updated laws
-
-Track revisions via commit history or comments in issues.
-
-## 🌍 4. Publishing & Discovery
-
-- Release finalized definitions → `release/DR_*.md`
-- Generate semantic vocab → `vocab/<DR>/<item>.ttl`
-- Publish via GitHub Actions as versioned artifacts.
-
-## 🔄 5. Change Management
-
-- Any update starts from status → ![proposed](https://img.shields.io/badge/proposed-ffc107).
-- From [for thorough review](https://img.shields.io/badge/for_thorough_review-ff9800), after further elaboration dictionary items go to ![ready for review].
-- Retired concepts receive status → ![archived](https://img.shields.io/badge/archived-bdbdbd).
-- Maintain changelog entries per definition.
-- Track rollback versions via git history.
-
-## 🌐 Visual Workflow
-
-```mermaid
-graph TD
-  A[Proposed] --> B[Ready for Review]
-  B --> C[Under the Review]
-  C --> E[Approved]
-  E --> F[Published]
-  F --> G[Archived]
-  C --> D[For Thorough Review]  
-  D --> B
-```
+The namespace is not decided yet. Until then `build.py` writes provisional `https://example.org/provisional/itsdd/` URIs and says so in the file; set `ITSDD_BASE` once the namespace exists.

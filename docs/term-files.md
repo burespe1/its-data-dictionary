@@ -1,46 +1,45 @@
-# 📄 Draft Dictionary Items
-This folder contains draft entries for semantic dictionary concepts aka **data types**, written in Markdown format with metadata in front matter. Each file includes:
+# Term files
 
-- YAML frontmatter for metadata (e.g. label, definition, language, status)
-- Rich content like text, code, and image references
+One Markdown file per term in `terms/<regulation>/<id>.md`. The file name is the `id`.
 
-**List of working data types definitions** in sin preview folder in [INDEX](./INDEX.md)
+A term file is the full record of the entry agreed in the Word template: YAML front matter for the fields that are short and structured, Markdown sections for the explanatory content, including figures and code examples. The SKOS file (`itsdd.ttl`) is generated from it and holds only the part SKOS is made for.
 
-## 🧱 File Structure
+## Front matter
 
-Each file must:
-- Use .md extension
-- Start with a YAML metadata block (between --- lines)
-- Include a human-readable definition and optional commentary, diagrams, or citations
+| Field | Required | Content | In the Turtle |
+| --- | --- | --- | --- |
+| `id` | yes | Stable identifier, lower case with hyphens; never changed or reused | concept URI |
+| `label` | yes | Name as in the legal text | `skos:altLabel` (or `skos:prefLabel` if there is no short name) |
+| `short_name` | no | Short, content-based name | `skos:prefLabel` |
+| `definition` | yes for `approved` | Concise definition | `skos:definition` |
+| `category`, `subcategory` | no | Position in the annex of the regulation | – |
+| `language` | no | `en` | language tag |
+| `status` | yes | `proposed`, `ready for review`, `under review`, `approved`, `for thorough review`, `archived` | `owl:deprecated` when archived |
+| `source` | yes | Legal act, e.g. `DR_EU_2022-670` | `r5r:applicableLegislation` (ELI) |
+| `modes` | no | List of relevant transport modes | – |
+| `mobility_theme` | no | List of mobilityDCAT-AP mobility-theme URIs | `skos:closeMatch` |
+| `model` | no | Link to a detailed concept model (SKOS models repository) | `rdfs:seeAlso` |
+| `created`, `modified` | no | Dates (YYYY-MM-DD) of first and last approval; set by the maintainer at release | `dct:modified` |
+| `note` | no | Status note, e.g. the successor of an archived term | – |
 
-### 🧾 Metadata Fields
+There is no per-term version number: the release carries the version, the term carries `modified`.
 
-| Field | Description | 
-| - | - | 
-| id | Unique lowercase identifier for the concept (also used as filename) | 
-| label | Human-friendly title | 
-| definition | Concise explanation of the concept's meaning | 
-| category | Domain or grouping the concept belongs to | 
-| language | Language code of the definition (e.g. en) | 
-| status | Approval state (draft, review, approved, etc.) | 
-| note* | *optional; Note on the status - if deprecated (archived) | 
-| source | Citable source or reference (standard, report, etc.) | 
-| subcategory | **list of** sub grouping the concept belongs to |
+## Body
 
+Sections in this order, each optional:
 
-### 🧾 Workflow
+```markdown
+## Related standards
+## Best practices
+## Correspondence with Transmodel/NeTEx concepts   (or DATEX II, …)
+## Example
+## References
+## Data quality
+```
 
-Drafts are manually edited and commented upon via GitHub issues.
+Figures go to `terms/assets/img/` and are linked as `![Figure 1](../assets/img/<id>-1.png)`. Code examples are fenced blocks with a language (`xml`, `json`); longer ones may go to `terms/assets/code/`.
 
-**Workflow including statuses is in detail described in** [WORKFLOW](WORKFLOW.md).
-
-Previews are manually generated after the commit by `generate_preview.py` in the [PREVIEW](./preview/README.md) folder
-
-Releases are manually generated after committing a version tag by `generate_releease.py`. in the [RELEASE](../release/README.md)
-
-## 🧠 Examples
-
-Here’s an example draft file named: `road-classification.md`
+## Example
 
 ```markdown
 ---
@@ -51,41 +50,13 @@ category: Types of data on infrastructure
 language: en
 status: proposed
 source: DR_EU_2022-670
+mobility_theme:
+  - https://w3id.org/mobilitydcat-ap/mobility-theme/road-classification
 ---
 
->According to ETSI TS 102 894-2 (DE=RoadType), road types are distinguished based on two parameters: (a) urban versus non-urban roads and (b) roads with versus without structural separation to opposite lanes.
+## Best practices
 
->An extended **classification** is provided by the INSPIRE data specification on transport networks (based on EuroRoads and GDF specifications). This classification is based on: (a) ‘form of way’ that considers the physical properties of each road link (including accessible mobility modes) and (b) ‘functional class’ indicating the importance of each road link within the road network. It is important to note that the ‘form of way’ and ‘functional class’ elements may vary in meaning across different European countries due to the lack of harmonization.
+According to ETSI TS 102 894-2 (DE=RoadType), road types are distinguished …
 
-![Figure](../assets/img/road-classification.png)
-
->NOTE: The classification of road links is an important aspect to be considered by navigation systems. For example, in certain contexts, main or first-class roads may preferably be used for long-distance traffic (e.g., international traffic), while the lower classes in this hierarchy may preferably be used for regional and local traffic.
-
->Reference/additional info: https://www.etsi.org/deliver/etsi_ts/102800_102899/10289402/01.03.01_60/ts_10289402v010301p.pdf; https://inspire.ec.europa.eu/id/document/tg/tn
+![Figure 1](../assets/img/road-classification.png)
 ```
-
-Here’s an example draft file named: `road-network--physical-attributes_road-width.md`
-
-```markdown
----
-id: road-network--physical-attributes_road-width
-label: road width
-definition: the minimum information required for indicating the width of a road network’s links.
-category: Types of data on infrastructure
-language: en
-status: proposed
-source: DR_EU_2022-670
-subcategory:
-  - Road network links and their physical attributes
----
-
->This information is addressed as encompassing in a discretized and systematic manner the width of various (maintained) components of the road surface, including driving lanes, hard shoulders, medians, parking space, and the roadside.
-
-> NOTE: Driving lanes, according to ETSI TS 102 894-2, are counted from the inside border of the road excluding the hard shoulder.
-
-> Reference/additional info: https://www.etsi.org/deliver/etsi_ts/102800_102899/10289402/01.03.01_60/ts_10289402v010301p.pdf 
-
-> Despite the fact that traffic capacity is the main concern of various RTTI-related use cases, lateral clearance constitutes a contextual factor for determining free-flow speed and, in turn, traffic capacity.
-```
-
-This structure allows automated parsing of metadata while retaining rich, readable content for users and editors alike.

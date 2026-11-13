@@ -1,6 +1,10 @@
 // Comment on selected text: opens a pre-filled GitHub issue form (no server needed).
 (function () {
-  const REPO = "NAPCORE/its-data-dictionary";
+  // Issues go to the repository the site is served from (<owner>.github.io/<repo>/),
+  // so a fork collects its own comments; anywhere else, to the NAPCORE repository.
+  const m = location.hostname.match(/^([^.]+)\.github\.io$/);
+  const seg = location.pathname.split("/").filter(Boolean)[0];
+  const REPO = m && seg ? `${m[1]}/${seg}` : "NAPCORE/its-data-dictionary";
   const btn = document.createElement("button");
   btn.textContent = "Comment on selection";
   btn.style.cssText = "position:absolute;display:none;z-index:1000;padding:4px 8px;" +

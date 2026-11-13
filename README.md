@@ -1,5 +1,14 @@
 # NAPCORE ITS Data Dictionary
 
+[![Release](https://img.shields.io/github/v/release/NAPCORE/its-data-dictionary?filter=itsdd-v*&label=release&style=flat-square)](https://github.com/NAPCORE/its-data-dictionary/releases)
+[![Build](https://img.shields.io/github/actions/workflow/status/NAPCORE/its-data-dictionary/build.yml?branch=main&label=build&style=flat-square)](https://github.com/NAPCORE/its-data-dictionary/actions/workflows/build.yml)
+[![Website](https://img.shields.io/badge/website-release%20%7C%20draft-blue?style=flat-square)](https://napcore.github.io/its-data-dictionary/)
+[![SKOS](https://img.shields.io/badge/SKOS-itsdd.ttl-blue?style=flat-square)](https://napcore.github.io/its-data-dictionary/itsdd.ttl)
+[![Terms](https://img.shields.io/endpoint?style=flat-square&url=https%3A%2F%2Fnapcore.github.io%2Fits-data-dictionary%2Fdraft%2Fbadges%2Fterms.json)](https://napcore.github.io/its-data-dictionary/draft/all-terms/)
+[![Approved](https://img.shields.io/endpoint?style=flat-square&url=https%3A%2F%2Fnapcore.github.io%2Fits-data-dictionary%2Fdraft%2Fbadges%2Fapproved.json)](https://napcore.github.io/its-data-dictionary/draft/all-terms/)
+[![Open comments](https://img.shields.io/github/issues/NAPCORE/its-data-dictionary/review?label=open%20comments&style=flat-square)](https://github.com/NAPCORE/its-data-dictionary/issues?q=is%3Aissue+is%3Aopen+label%3Areview)
+[![License](https://img.shields.io/github/license/NAPCORE/its-data-dictionary?style=flat-square)](LICENSE)
+
 Definitions of the data categories in the delegated regulations of the ITS Directive (MMTIS, RTTI, SRTI, SSTP), AFIR and TEL-TSI, maintained by NAPCORE Task 5.3.1.
 
 **Readers:** use the website (GitHub Pages of this repository): the latest release at the root, work in progress under `/draft/`, all terms with their status on the page *All terms*. Select any text on a page to comment on it; this opens a short GitHub issue form.

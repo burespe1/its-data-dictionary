@@ -13,6 +13,7 @@ Environment variables:
 Requires: PyYAML.
 """
 import argparse
+import json
 import os
 import re
 import shutil
@@ -262,6 +263,16 @@ def build(terms, version):
         allp.append(f"| [{cell(fm['label'])}]({t['folder']}/{fm['id']}.md) | {SHORT[t['folder']]} | "
                     f"{fm.get('status', '')} | {fm.get('modified', '—')} | {cell(fm.get('category'))} |")
     (OUT / "all-terms.md").write_text("\n".join(allp) + "\n", encoding="utf-8")
+
+    # badge data for shields.io endpoint badges in README.md
+    (OUT / "badges").mkdir()
+    n_appr = counts.get("approved", 0)
+    badges = {"terms": ("terms", str(len(terms)), "blue"),
+              "approved": ("approved", f"{n_appr} of {len(terms)}",
+                           "brightgreen" if n_appr == len(terms) else "yellow" if n_appr else "lightgrey")}
+    for name, (label, msg, color) in badges.items():
+        (OUT / "badges" / f"{name}.json").write_text(json.dumps(
+            {"schemaVersion": 1, "label": label, "message": msg, "color": color}), encoding="utf-8")
 
     # tags index (filled in by the MkDocs Material tags plugin)
     (OUT / "tags.md").write_text("# Tags\n\nTerms by regulation, status, category and mode.\n\n"

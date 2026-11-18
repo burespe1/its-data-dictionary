@@ -73,16 +73,41 @@ def as_markdown(text):
     return text
 
 
-def cell_text(cell):
-    """Cell text with list paragraphs turned into Markdown bullets."""
-    out = []
-    for p in cell.paragraphs:
-        t = p.text.strip()
-        ppr = p._p.pPr
-        is_list = (ppr is not None and ppr.numPr is not None) or \
-            (p.style is not None and "list" in p.style.name.lower())
-        out.append(f"- {t}" if (is_list and t) else t)
+def cell_text(cell, skip_first=False):
+    """Cell text in Markdown: list paragraphs become bullets, nested tables become Markdown tables.
+    With skip_first, the first non-empty paragraph (the definition itself) is left out."""
+    out, skipped = [], not skip_first
+    for el in cell._tc.iterchildren():
+        tag = el.tag.split("}")[1]
+        if tag == "p":
+            p = Paragraph(el, cell)
+            t = p.text.strip()
+            if not skipped:
+                if t:
+                    skipped = True
+                continue
+            ppr = p._p.pPr
+            is_list = (ppr is not None and ppr.numPr is not None) or \
+                (p.style is not None and "list" in p.style.name.lower())
+            out.append(f"- {t}" if (is_list and t) else t)
+        elif tag == "tbl" and skipped:
+            rows = [[c.text.strip().replace("\n", " ").replace("|", "\\|") for c in r.cells]
+                    for r in Table(el, cell).rows]
+            if rows:
+                out.append("")
+                out.append("| " + " | ".join(rows[0]) + " |")
+                out.append("|" + " --- |" * len(rows[0]))
+                out += ["| " + " | ".join(r) + " |" for r in rows[1:]]
+                out.append("")
     return "\n".join(out)
+
+
+def first_paragraph(cell):
+    """The definition: the first non-empty paragraph of the Definition cell."""
+    for p in cell.paragraphs:
+        if p.text.strip():
+            return clean(p.text)
+    return ""
 
 
 def cell_images(cell, doc, prefix, outdir):
@@ -168,7 +193,7 @@ def convert(path, outdir=None):
         fm = {"id": term_id, "label": name}
         if short:
             fm["short_name"] = short
-        fm["definition"] = clean(rows["definition"][1].text) if "definition" in rows else ""
+        fm["definition"] = first_paragraph(rows["definition"][1]) if "definition" in rows else ""
         path_h = [headings[k] for k in sorted(headings)]
         if path_h:
             fm["category"] = path_h[0]
@@ -187,6 +212,12 @@ def convert(path, outdir=None):
                 if vals:
                     fm[LIST_FIELDS[key]] = vals
                 continue
+        if "definition" in rows:  # explanation that follows the definition in the same cell
+            dcell = rows["definition"][1]
+            text = as_markdown(cell_text(dcell, skip_first=True))
+            imgs = cell_images(dcell, doc, f"{term_id}-def", (outdir / folder).parent if outdir else None)
+            if text or imgs:
+                body.append("## Explanation\n\n" + "\n\n".join([t for t in [text] if t] + imgs))
         for wanted in BODY_ORDER:
             for key, (label, cell) in rows.items():
                 if not (key == wanted or (wanted == "correspondence" and key.startswith("correspondence"))):
